@@ -1,4 +1,5 @@
 from models import User, Transaction
+from database import engine, SessionLocal, Base
 
 def test_user_model_initialization():
     test_user = User(username="admin", email="admin@fraud.local", hashed_password="fakehash123")
@@ -15,3 +16,9 @@ def test_transaction_model_initialization():
     )
     assert test_tx.amount == 50000.0
     assert test_tx.channel == "UPI"
+
+def test_db_session_and_tables():
+    Base.metadata.create_all(bind=engine)
+    session = SessionLocal()
+    assert session is not None
+    session.close()
