@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import './App.css';
+import GraphCanvas from './GraphCanvas';
 
 function formatSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
@@ -108,6 +109,8 @@ function App() {
             <div className={`message ${message.type}`}>{message.text}</div>
           )}
         </form>
+
+        <GraphCanvas />
       </main>
     </div>
   );
