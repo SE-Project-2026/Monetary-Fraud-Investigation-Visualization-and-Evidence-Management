@@ -1,9 +1,19 @@
-
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fraud_algorithms import detect_routing_cycles
 
 app = FastAPI(title="Fraud Investigation API")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In a real application, you should be more specific about allowed origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class LoginRequest(BaseModel):

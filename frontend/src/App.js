@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import './App.css';
+import CircularRoutingView from './CircularRoutingView';
 
 function formatSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
@@ -51,7 +52,8 @@ function App() {
         <h1>Monetary Fraud Investigation Platform</h1>
       </header>
 
-      <main className="main">
+       <main className="main" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+        {/* Upload Evidence Section */}
         <form className="card" onSubmit={handleUpload}>
           <h2>Upload Evidence</h2>
           <p className="subtitle">
@@ -108,6 +110,12 @@ function App() {
             <div className={`message ${message.type}`}>{message.text}</div>
           )}
         </form>
+
+        {/* Circular Routing Detection Section */}
+        <div style={{ marginTop: '2rem' }}>
+          <h2>Circular Routing Detection</h2>
+          <CircularRoutingView />
+        </div>
       </main>
     </div>
   );
