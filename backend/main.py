@@ -1,6 +1,7 @@
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from fraud_algorithms import detect_routing_cycles
 
 app = FastAPI(title="Fraud Investigation API")
 
@@ -25,3 +26,21 @@ def login(request: LoginRequest):
         status_code=401,
         detail="Invalid credentials"
     )
+
+@app.get("/api/fraud/circular-routing")
+def get_circular_routing():
+    # Mock data simulating a fraud ring: A -> B -> C -> A
+    mock_db_transactions = [
+        {"tx_id": 1, "sender_id": "Acc_A", "receiver_id": "Acc_B"},
+        {"tx_id": 2, "sender_id": "Acc_B", "receiver_id": "Acc_C"},
+        {"tx_id": 3, "sender_id": "Acc_C", "receiver_id": "Acc_A"},
+        {"tx_id": 4, "sender_id": "Acc_D", "receiver_id": "Acc_E"} # Normal transaction
+    ]
+    
+    detected_cycles = detect_routing_cycles(mock_db_transactions)
+    
+    return {
+        "status": "success",
+        "total_cycles_found": len(detected_cycles),
+        "cycles": detected_cycles 
+    }
