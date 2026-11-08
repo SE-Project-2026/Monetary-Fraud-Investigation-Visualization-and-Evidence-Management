@@ -103,3 +103,34 @@ def get_account_graph(
         }
     finally:
         db.close()
+        
+
+@app.get("/api/accounts/search")
+def search_accounts(q: str = Query(..., min_length=2)):
+    db = SessionLocal()
+    try:
+        # Search source accounts
+        source_accounts = db.query(Transaction.source_account).filter(
+            Transaction.source_account.ilike(f"%{q}%")
+        ).distinct().all()
+
+        # Search destination accounts
+        dest_accounts = db.query(Transaction.destination_account).filter(
+            Transaction.destination_account.ilike(f"%{q}%")
+        ).distinct().all()
+
+        # Combine both results and remove duplicates
+        matches = sorted({
+            acc[0]
+            for acc in source_accounts + dest_accounts
+            if acc[0] is not None
+        })
+
+        return {
+            "query": q,
+            "count": len(matches),
+            "results": matches
+        }
+
+    finally:
+        db.close()
