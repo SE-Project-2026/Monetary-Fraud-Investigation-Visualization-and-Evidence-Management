@@ -52,6 +52,11 @@ def test_graph_traversal_filters():
     assert "ACC2000000000002" in targets
     assert "ACC4000000000004" not in targets
 
+    # Cover channel filter branch
+    res_ch = client.get("/api/graph/ACC1000000000001?hops=1&channel=UPI")
+    assert res_ch.status_code == 200
+    assert len(res_ch.json()["edges"]) == 1
+
 def test_graph_nonexistent_account():
     res = client.get("/api/graph/NON_EXISTENT")
     assert res.status_code == 200

@@ -50,23 +50,7 @@ def test_login_wrong_username():
     )
 
     assert response.status_code == 401
-    assert response.json() == {"detail": "Invalid credentials"}
-
-def test_upload_evidence_sha256_success():
-    payload = b"fraud-investigation-sample-evidence-data"
-    expected_hash = hashlib.sha256(payload).hexdigest()
-
-    response = client.post(
-        "/api/upload",
-        files={"file": ("evidence_test.csv", payload, "text/csv")}
-    )
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["filename"] == "evidence_test.csv"
-    assert data["sha256_hash"] == expected_hash
-    assert data["message"] == "Evidence uploaded and hashed successfully."
-    
+    assert response.json() == {"detail": "Invalid credentials"}   
 
 def test_account_search_success():
     Base.metadata.create_all(bind=engine)
@@ -137,3 +121,23 @@ def test_account_search_min_length_validation():
     response = client.get("/api/accounts/search?q=A")
 
     assert response.status_code == 422
+
+def test_upload_evidence_sha256_success():
+    payload = (
+        b"transaction_id,source_account,destination_account,amount,channel\n"
+        b"TX-TEST-1,ACC1000000000001,ACC2000000000002,5000.0,UPI\n"
+    )
+    expected_hash = hashlib.sha256(payload).hexdigest()
+
+    response = client.post(
+        "/api/upload",
+        files={"file": ("evidence_test.csv", payload, "text/csv")}
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["filename"] == "evidence_test.csv"
+    assert data["sha256_hash"] == expected_hash
+    assert data["records_ingested"] == 1
+    assert data["seed_account"] == "ACC1000000000001"
+    assert data["message"] == "Evidence hashed and ingested successfully."

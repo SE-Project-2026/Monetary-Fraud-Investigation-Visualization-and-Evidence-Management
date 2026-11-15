@@ -1,4 +1,6 @@
 import hashlib
+import csv
+import io
 from fastapi import FastAPI,Depends, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -35,15 +37,43 @@ def login(request: LoginRequest):
 
 @app.post("/api/upload")
 async def upload_evidence(file: UploadFile = File(...)):
-    sha256_hash = hashlib.sha256()
-    while chunk := await file.read(8192):
-        sha256_hash.update(chunk)
-    evidence_hash = sha256_hash.hexdigest()
-    await file.seek(0)
+    content = await file.read()
+    evidence_hash = hashlib.sha256(content).hexdigest()
+
+    inserted_count = 0
+    first_account = None
+
+    if file.filename.endswith(".csv"):
+        decoded = content.decode("utf-8", errors="ignore")
+        reader = csv.DictReader(io.StringIO(decoded))
+        if reader.fieldnames and "source_account" in reader.fieldnames:
+            db = SessionLocal()
+            try:
+                db.query(Transaction).delete()
+                for idx, row in enumerate(reader):
+                    src = row["source_account"].strip()
+                    dst = row["destination_account"].strip()
+                    if not first_account:
+                        first_account = src
+                    tx = Transaction(
+                        transaction_id=row.get("transaction_id", f"TX-{idx+1}").strip(),
+                        source_account=src,
+                        destination_account=dst,
+                        amount=float(row["amount"]),
+                        channel=row.get("channel", "NEFT").strip()
+                    )
+                    db.add(tx)
+                    inserted_count += 1
+                db.commit()
+            finally:
+                db.close()
+
     return {
         "filename": file.filename,
         "sha256_hash": evidence_hash,
-        "message": "Evidence uploaded and hashed successfully."
+        "records_ingested": inserted_count,
+        "seed_account": first_account,
+        "message": "Evidence hashed and ingested successfully."
     }
 
 @app.get("/api/graph/{account_id}")
