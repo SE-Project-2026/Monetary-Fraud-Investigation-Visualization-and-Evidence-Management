@@ -95,7 +95,7 @@ TX-504,ACC9000000000003,ACC9000000000005,40000,IMPS
 TX-505,ACC9000000000004,ACC9000000000001,235000,RTGS
 ```
 
-## Team — Project ID 54 (Jackfruit 54)
+## Team Contributions
 
 ### Member Module & Responsibilities
 
